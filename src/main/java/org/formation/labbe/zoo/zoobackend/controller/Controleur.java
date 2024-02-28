@@ -1,6 +1,9 @@
 package org.formation.labbe.zoo.zoobackend.controller;
 
 import jakarta.annotation.PostConstruct;
+import org.formation.labbe.zoo.dto.AnimalInfo;
+import org.formation.labbe.zoo.dto.CageVide;
+import org.formation.labbe.zoo.dto.Devorer;
 import org.formation.labbe.zoo.zoobackend.entites.CagePOJO;
 import org.formation.labbe.zoo.zoobackend.entites.GazellePOJO;
 import org.formation.labbe.zoo.modele.*;
@@ -19,14 +22,14 @@ import org.reflections.scanners.SubTypesScanner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 @RestController
+@RequestMapping("/")
 public class Controleur {
 	private HashMap<Integer, CagePersistante> lesCages;
 	private List<Visiteur> lesVisiteurs;
@@ -54,6 +57,7 @@ public class Controleur {
 	/**
 	 * Permet de nourrir tous les animaux du zoo
 	 */
+	@PostMapping("/nourrir")
 	public void nourrir ()
 	{
 		lesCages.forEach((key,el)->{
@@ -63,14 +67,16 @@ public class Controleur {
 	}
 
 	/**
-	 *
-	 * @param mangeur indice de l'animal mangeur (sa cage)
-	 * @param mange indice de la cage de la proie
+	 * Permet de faire dévorer un animal
 	 * @return le texte sur ce qu'il s'est passé
-	 *
 	 */
-	public String devorer(int mangeur, int mange,boolean visiteur)
+
+	@PostMapping("/devorer")
+	public String devorer(@RequestBody Devorer params)
 	{
+		int mangeur = params.mangeur();
+		int mange = params.mange();
+		boolean visiteur = params.visiteur();
 		Proie laBeteConvoitee = null;
 		String s = "INCOMPATIBLE";
 		if (!visiteur){
@@ -121,12 +127,14 @@ public class Controleur {
 
 	}
 
+	@PostMapping("/entrerVisiteur")
 	public void entrer(){
 		if (Visiteur.getNb() < Visiteur.MAX){
 			lesVisiteurs.add(new Visiteur());
 		}
 	}
 
+	@PostMapping("/sortirVisiteur")
 	public void sortir(){
 		if (Visiteur.getNb() > 0){
 			lesVisiteurs.remove(Visiteur.getNb()-1);
@@ -134,12 +142,18 @@ public class Controleur {
 		}
 	}
 
+	@GetMapping("/visiteurs")
 	public int getNbVisiteurs(){
 		return Visiteur.getNb();
 	}
 
 	@GetMapping("/")
-	public List<CageInfos> index(){
+	public String index(){
+		return "Backend initialisé";
+	}
+
+	@GetMapping("/lireTous")
+	public List<CageInfos> getCagesInfos(){
 		ArrayList<CageInfos> ret = new ArrayList<>();
 		lesCages.forEach((key, el)-> {
 			ret.add(el.getCageInfo());
@@ -147,10 +161,11 @@ public class Controleur {
 		return ret;
 	}
 
-    public void ajouterCage(int x, int y) {
+	@PostMapping("/ajouterCage")
+    public void ajouterCage(@RequestBody CageVide params) {
 		CagePOJO c = new CagePOJO();
-		c.setX(x);
-		c.setY(y);
+		c.setX(params.x());
+		c.setY(params.y());
 		service.ajouter(c);
 		lireCages();
     }
@@ -162,42 +177,38 @@ public class Controleur {
 						new CagePersistante(el.getIdAnimal(), service)));
 	}
 
+	@GetMapping("/getTypesDispo")
 	public List<String> getTypesAnimal(){
 		ArrayList<String> ret = new ArrayList<>();
-		Reflections reflections = new Reflections("org.formation.zoo.modele",new SubTypesScanner(false));
+		Reflections reflections = new Reflections(Animal.class.getPackage().getName(),new SubTypesScanner(false));
 		reflections.getSubTypesOf(Animal.class).forEach(el->{
 			ret.add(el.getSimpleName());
 		});
 		return ret;
 	}
 
-	public void entrerAnimal(String animal, int id, HashMap<String, String> params) {
-		CagePersistante laCage = this.lesCages.get(id);
+	@PostMapping("/entrerAnimal")
+	public void entrerAnimal(@RequestBody AnimalInfo params) {
+		CagePersistante laCage = this.lesCages.get(params.idCage());
 		CagePOJO pojo = new CagePOJO();
-		pojo.setCodeAnimal(animal);
-		pojo.setIdAnimal(id);
-		if(params.get("Nom")!=null && !params.get("Nom").isEmpty()){
-			pojo.setNom(params.get("Nom"));
+		pojo.setCodeAnimal(params.type());
+		pojo.setIdAnimal(params.idCage());
+		if(params.nom()!=null && !params.nom().isEmpty()){
+			pojo.setNom(params.nom());
 		}
-		if(params.get("Age")!=null && !params.get("Age").isEmpty()){
-			pojo.setAge(Integer.parseInt(params.get("Age")));
-		}
-		if(params.get("Poids")!=null && !params.get("Poids").isEmpty()){
-			pojo.setPoids(Double.parseDouble(params.get("Poids")));
-		}
+		pojo.setAge(params.age());
+		pojo.setPoids(params.poids());
 		if(pojo.getCodeAnimal().equals("Gazelle")){
 			GazellePOJO gaz = new GazellePOJO();
-			gaz.setIdAnimal(id);
-			if(params.get("lgCornes")!=null && !params.get("lgCornes").isEmpty()){
-				gaz.setLgCornes(Integer.parseInt((params.get("lgCornes"))));
-			}
+			gaz.setIdAnimal(params.idCage());
+			gaz.setLgCornes(params.lgCornes());
 			pojo.setGaz(gaz);
 		}
 		Cage tmp = Conversion.toCage(pojo);
 		tmp.ouvrir();
 		try{
 			laCage.ouvrir();
-			laCage.entrer(tmp.sortir(), id);
+			laCage.entrer(tmp.sortir(), params.idCage());
 			laCage.fermer();
 		} catch (CagePleineException | PorteException e) {
 			Trace.erreur(e.getMessage());
