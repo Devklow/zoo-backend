@@ -78,31 +78,9 @@ class CagePersistanteTest {
     @Test
     void nourrir() {
         CagePersistante c = new CagePersistante(2, service);
-        Lion l = new Lion();
-        c.ouvrir();
-        Animal old;
-        try {
-            old = c.sortir();
-            c.entrer(l, 99);
-        } catch (PorteException e) {
-            throw new RuntimeException(e);
-        } catch (CagePleineException e) {
-            throw new RuntimeException(e);
-        }
-        c.fermer();
-        assertEquals("je suis un(e) Lion je m'appelle Leo j'ai 34 an(s) et je pèse 156.0 kg", c.getCageInfo().pancarte());
+        assertEquals("je suis un(e) Gazelle je m'appelle GAGAG j'ai 5 an(s) et je pèse 135.2 kg et mes cornes font 34 cm", c.getCageInfo().pancarte());
         c.nourrir();
-        assertEquals("je suis un(e) Lion je m'appelle Leo j'ai 34 an(s) et je pèse 157.9 kg", c.getCageInfo().pancarte());
+        assertEquals("je suis un(e) Gazelle je m'appelle GAGAG j'ai 5 an(s) et je pèse 135.6 kg et mes cornes font 36 cm", c.getCageInfo().pancarte());
         c.ouvrir();
-        try {
-            c.sortir();
-            c.entrer(old, 2);
-            c.fermer();
-        } catch (PorteException e) {
-            throw new RuntimeException(e);
-        } catch (CagePleineException e) {
-            throw new RuntimeException(e);
-        }
-
     }
 }
