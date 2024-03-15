@@ -1,11 +1,15 @@
 package org.formation.labbe.zoo.zoobackend.technique;
 
 import org.formation.labbe.zoo.modele.Animal;
+import org.formation.labbe.zoo.modele.Cage;
 import org.formation.labbe.zoo.modele.Lion;
+import org.formation.labbe.zoo.modele.Proie;
+import org.formation.labbe.zoo.modele.technique.BeurkException;
 import org.formation.labbe.zoo.modele.technique.CagePleineException;
 import org.formation.labbe.zoo.modele.technique.PorteException;
 import org.formation.labbe.zoo.zoobackend.services.CageService;
 import org.formation.labbe.zoo.zoobackend.services.CageServiceImpl;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -81,6 +85,25 @@ class CagePersistanteTest {
         assertEquals("je suis un(e) Gazelle je m'appelle GAGAG j'ai 5 an(s) et je pèse 135.2 kg et mes cornes font 34 cm", c.getCageInfo().pancarte());
         c.nourrir();
         assertEquals("je suis un(e) Gazelle je m'appelle GAGAG j'ai 5 an(s) et je pèse 135.6 kg et mes cornes font 36 cm", c.getCageInfo().pancarte());
+        c.ouvrir();
+        this.manger();
+    }
+
+    void manger() {
+        CagePersistante c = new CagePersistante(1, service);
+        CagePersistante c2 = new CagePersistante(2, service);
+        assertEquals("je suis un(e) Lion je m'appelle clarence j'ai 10 an(s) et je pèse 170.4 kg", c.getCageInfo().pancarte());
+        assertEquals("je suis un(e) Gazelle je m'appelle GAGAG j'ai 5 an(s) et je pèse 135.6 kg et mes cornes font 34 cm", c2.getCageInfo().pancarte());
+        try {
+            c2.ouvrir();
+            c.manger((Proie) c2.sortir());
+        } catch (BeurkException e) {
+            throw new RuntimeException(e);
+        } catch (PorteException e) {
+            throw new RuntimeException(e);
+        }
+        assertEquals("je suis un(e) Lion je m'appelle clarence j'ai 10 an(s) et je pèse 215.6 kg", c.getCageInfo().pancarte());
+        assertEquals("Cage vide", c2.getCageInfo().pancarte());
         c.ouvrir();
     }
 }
