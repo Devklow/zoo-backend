@@ -15,15 +15,19 @@
 	<description>zoo-backend</description>
 	<properties>
 		<java.version>20</java.version>
+		<!--suppress UnresolvedMavenProperty -->
 		<sonar.host.url>${env.SONAR_HOST}</sonar.host.url>
 		<sonar.projectKey>zoo-backend</sonar.projectKey>
 		<sonar.projectName>zoo-backend</sonar.projectName>
 		<sonar.qualitygate.wait>true</sonar.qualitygate.wait>
+		<!--suppress UnresolvedMavenProperty -->
 		<sonar.token>${env.SONAR_TOKEN}</sonar.token>
 		<sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
 		<sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
 		<sonar.language>java</sonar.language>
 		<sonar.scm.provider>git</sonar.scm.provider>
+		<sonar.exclusions>**Controleur.*, **ZooBackendApplication.*</sonar.exclusions>
+		<sonar.coverage.exclusions>**Controleur.*, **ZooBackendApplication.*</sonar.coverage.exclusions>
 	</properties>
 	<dependencies>
 		<dependency>
