@@ -7,7 +7,7 @@ variables:
 # Maven avec JDK 20
 image: maven:3-eclipse-temurin-20
 services:
-  - name: K8.adms.dil.univ-mrs.fr/labbe/zoo.mysql
+  - name: k8.adms.dil.univ-mrs.fr/labbe/zoo.mysql
     alias: mysql
 
 cache:
