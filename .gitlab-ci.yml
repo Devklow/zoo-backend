@@ -1,7 +1,7 @@
 variables:
   MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
   MAVEN_CLI_OPTS: "--batch-mode -s settings.xml --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true -Dsonar.coverage.jacoco.xmlReportPaths=report1.xml,report2.xml"
-  MAVEN_SKIP_TEST: "-s settings.xml -Dmaven.test.skip=true"
+  MAVEN_SKIP_TEST: "-s settings.xml -Dmaven.test.skip=true -DoutputDirectory=./target/"
   DOCKER_AUTH_CONFIG: ${env.DOCKER_AUTH_CONFIG}
 
 # Maven avec JDK 20
@@ -26,7 +26,7 @@ build:
   stage: build
   script:
     - 'mvn $MAVEN_CLI_OPTS clean'
-    - 'mvn $MAVEN_CLI_OPTS package'
+    - 'mvn $MAVEN_CLI_OPTS compile'
 
 bdd:
   stage: bdd
@@ -60,6 +60,7 @@ docker:
     name: gcr.io/kaniko-project/executor:v1.14.0-debug
     entrypoint: [""]
   script:
+      - 'mvn package $MAVEN_SKIP_TEST'
       - echo "{\"auths\":{\"k8.adms.dil.univ-mrs.fr\":{\"auth\":\"$(printf "%s:%s" "${NEXUS_USER}" "${NEXUS_PASS}" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
       - /kaniko/executor
         --context "${CI_PROJECT_DIR}"
