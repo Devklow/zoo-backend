@@ -20,6 +20,7 @@ stages:
   - test
   - quality
   - deployment
+  - docker
 
 build:
   stage: build
@@ -29,7 +30,7 @@ build:
 
 bdd:
   stage: bdd
-  image: vincensini/zoomysql:latest
+  image: k8.adms.dil.univ-mrs.fr/labbe/zoo.mysql
   script:
     - 'echo base chargée'
 
@@ -53,4 +54,14 @@ deployment:
     - 'mvn package $MAVEN_SKIP_TEST'
     - 'mvn clean deploy $MAVEN_SKIP_TEST'
 
+docker:
+  stage: docker
+  image:
+    name: gcr.io/kaniko-project/executor:v1.14.0-debug
+    entrypoint: [""]
+  script:
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}"
+      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+      --destination "k8.adms.dil.univ-mrs.fr/labbe/zoo.backend:latest"
 
