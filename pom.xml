@@ -15,6 +15,15 @@
 	<description>zoo-backend</description>
 	<properties>
 		<java.version>20</java.version>
+		<sonar.host.url>${env.SONAR_HOST}</sonar.host.url>
+		<sonar.projectKey>zoo-backend</sonar.projectKey>
+		<sonar.projectName>zoo-backend</sonar.projectName>
+		<sonar.qualitygate.wait>true</sonar.qualitygate.wait>
+		<sonar.token>${env.SONAR_TOKEN}</sonar.token>
+		<sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
+		<sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+		<sonar.language>java</sonar.language>
+		<sonar.scm.provider>git</sonar.scm.provider>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -72,6 +81,61 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.2.1</version>
+			</plugin>
+			<plugin>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>3.2.1</version>
+			</plugin>
+			<!-- Sonar-JaCoCo integration plugin -->
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.11</version>
+				<executions>
+					<execution>
+						<id>prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<excludes>
+						<exclude>**module-info.*</exclude>
+						<exclude>**CageInfos.*</exclude>
+						<exclude>**Devorer.*</exclude>
+						<exclude>**Message.*</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<version>1.5.1</version>
+				<executions>
+					<execution>
+						<id>default-deploy</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>deploy</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<serverId>nexus-amu</serverId>
+					<nexusUrl>https://repo.adms.dil.univ-mrs.fr/repository/maven_adms/</nexusUrl>
+					<skipStaging>true</skipStaging>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
